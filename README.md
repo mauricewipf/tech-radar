@@ -16,7 +16,6 @@ import { TechRadar } from './components/TechRadar'
 import type { TechRadarConfig } from './components/TechRadar'
 
 const config: TechRadarConfig = {
-  title: 'My Radar',
   quadrants: [
     { name: 'Languages' },
     { name: 'Infrastructure' },

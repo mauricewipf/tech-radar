@@ -8,11 +8,3 @@
   max-width: 100%;
   height: auto;
 }
-
-.tech-radar .hover-underline {
-  text-decoration: none;
-}
-
-.tech-radar .hover-underline:hover {
-  text-decoration: underline;
-}

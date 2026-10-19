@@ -18,7 +18,7 @@ export function TechRadar({ config }: TechRadarProps) {
 
   return (
     <div className="tech-radar">
-      <svg ref={svgRef} id={svgId} role="img" aria-label={config.title} />
+      <svg ref={svgRef} id={svgId} role="img" aria-label="Tech Radar" />
     </div>
   )
 }

@@ -37,9 +37,6 @@ export interface RadarOffset {
 }
 
 export interface TechRadarConfig {
-  title: string
-  date?: string
-  repo_url?: string
   scale?: number
   colors?: Partial<RadarColors>
   font_family?: string
@@ -66,7 +63,6 @@ export interface TechRadarConfig {
     RadarOffset,
     RadarOffset,
   ]
-  title_offset?: RadarOffset
   footer_offset?: RadarOffset
   legend_column_width?: number
   legend_line_height?: number

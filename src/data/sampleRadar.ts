@@ -1,9 +1,6 @@
 import type { TechRadarConfig } from '../components/TechRadar'
 
 export const sampleRadarConfig: TechRadarConfig = {
-  title: 'Tech Radar',
-  date: '2026.10',
-  repo_url: 'https://github.com/zalando/tech-radar',
   colors: {
     background: 'transparent',
     grid: '#dddde0',

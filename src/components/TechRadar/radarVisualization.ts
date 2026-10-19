@@ -94,15 +94,11 @@ export function radarVisualization(
     print_layout: input.print_layout ?? true,
     show_legend: input.show_legend ?? false,
     links_in_new_tabs: input.links_in_new_tabs ?? true,
-    repo_url: input.repo_url ?? '#',
     legend_offset,
-    title_offset: input.title_offset ?? { x: -675, y: -480 },
     footer_offset: input.footer_offset ?? { x: -155, y: 520 },
     legend_column_width: input.legend_column_width ?? 140,
     legend_line_height: input.legend_line_height ?? 10,
     font_family: input.font_family ?? 'Arial, Helvetica',
-    title: input.title,
-    date: input.date ?? '',
     quadrants: input.quadrants,
     rings: input.rings,
     entries: input.entries.map((entry) => ({
@@ -407,28 +403,6 @@ export function radarVisualization(
   }
 
   if (config.print_layout) {
-    radar
-      .append('a')
-      .attr('href', config.repo_url)
-      .attr('transform', translate(config.title_offset.x, config.title_offset.y))
-      .append('text')
-      .attr('class', 'hover-underline')
-      .text(config.title)
-      .style('font-family', config.font_family)
-      .style('font-size', '30')
-      .style('font-weight', 'bold')
-
-    radar
-      .append('text')
-      .attr(
-        'transform',
-        translate(config.title_offset.x, config.title_offset.y + 20),
-      )
-      .text(config.date)
-      .style('font-family', config.font_family)
-      .style('font-size', '14')
-      .style('fill', '#999')
-
     if (config.show_legend) {
       radar
         .append('text')
