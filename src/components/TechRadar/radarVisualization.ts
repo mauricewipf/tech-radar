@@ -71,7 +71,7 @@ export function radarVisualization(
     height: input.height ?? 1000,
     scale: input.scale ?? 1,
     colors: {
-      background: input.colors?.background ?? '#fff',
+      background: input.colors?.background ?? 'transparent',
       grid: input.colors?.grid ?? '#dddde0',
       inactive: input.colors?.inactive ?? '#ddd',
     },

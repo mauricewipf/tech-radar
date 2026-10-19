@@ -7,7 +7,7 @@ export const sampleRadarConfig: TechRadarConfig = {
   width: 1450,
   height: 1000,
   colors: {
-    background: '#fff',
+    background: 'transparent',
     grid: '#dddde0',
     inactive: '#ddd',
   },
