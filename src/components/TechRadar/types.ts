@@ -61,6 +61,4 @@ export interface TechRadarConfig {
 
 export interface TechRadarProps {
   config: TechRadarConfig
-  className?: string
-  svgId?: string
 }

@@ -3,10 +3,9 @@ import { radarVisualization } from './radarVisualization'
 import type { TechRadarProps } from './types'
 import './TechRadar.css'
 
-export function TechRadar({ config, className, svgId }: TechRadarProps) {
+export function TechRadar({ config }: TechRadarProps) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const reactId = useId().replace(/:/g, '')
-  const resolvedSvgId = svgId ?? `tech-radar-${reactId}`
+  const svgId = `tech-radar-${useId().replace(/:/g, '')}`
 
   useEffect(() => {
     const svg = svgRef.current
@@ -14,12 +13,12 @@ export function TechRadar({ config, className, svgId }: TechRadarProps) {
       return
     }
 
-    return radarVisualization(svg, config, resolvedSvgId)
-  }, [config, resolvedSvgId])
+    return radarVisualization(svg, config, svgId)
+  }, [config, svgId])
 
   return (
-    <div className={['tech-radar', className].filter(Boolean).join(' ')}>
-      <svg ref={svgRef} id={resolvedSvgId} role="img" aria-label={config.title} />
+    <div className="tech-radar">
+      <svg ref={svgRef} id={svgId} role="img" aria-label={config.title} />
     </div>
   )
 }
