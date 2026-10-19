@@ -4,8 +4,6 @@ export const sampleRadarConfig: TechRadarConfig = {
   title: 'Tech Radar',
   date: '2026.10',
   repo_url: 'https://github.com/zalando/tech-radar',
-  width: 1600,
-  height: 1100,
   colors: {
     background: 'transparent',
     grid: '#dddde0',

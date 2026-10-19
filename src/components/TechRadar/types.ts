@@ -40,8 +40,6 @@ export interface TechRadarConfig {
   title: string
   date?: string
   repo_url?: string
-  width?: number
-  height?: number
   scale?: number
   colors?: Partial<RadarColors>
   font_family?: string

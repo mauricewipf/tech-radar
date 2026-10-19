@@ -85,8 +85,6 @@ export function radarVisualization(
 
   const config = {
     svg_id: svgId,
-    width: input.width ?? 1600,
-    height: input.height ?? 1100,
     scale: input.scale ?? 1,
     colors: {
       background: input.colors?.background ?? 'transparent',
@@ -256,8 +254,6 @@ export function radarVisualization(
     return [cx - 220, cy - 220, 440, 440].join(' ')
   }
 
-  const scaled_width = config.width * config.scale
-  const scaled_height = config.height * config.scale
   const solidFilterId = `${config.svg_id}-solid`
   const bubbleId = `${config.svg_id}-bubble`
 
@@ -265,17 +261,27 @@ export function radarVisualization(
     .select(svgElement)
     .attr('id', config.svg_id)
     .style('background-color', config.colors.background)
-    .attr('width', scaled_width)
-    .attr('height', scaled_height)
 
   const radar = svg.append('g')
   if (config.zoomed_quadrant !== undefined) {
     svg.attr('viewBox', viewbox(config.zoomed_quadrant))
-  } else {
-    radar.attr(
-      'transform',
-      `${translate(scaled_width / 2, scaled_height / 2)}scale(${config.scale})`,
-    )
+  }
+
+  function fitSvgToContent() {
+    const node = radar.node()
+    if (!node) {
+      return
+    }
+    const bbox = node.getBBox()
+    const pad = 16
+    const x = bbox.x - pad
+    const y = bbox.y - pad
+    const w = Math.max(bbox.width + pad * 2, 1)
+    const h = Math.max(bbox.height + pad * 2, 1)
+    svg
+      .attr('viewBox', `${x} ${y} ${w} ${h}`)
+      .attr('width', w * config.scale)
+      .attr('height', h * config.scale)
   }
 
   const grid = radar.append('g')
@@ -653,6 +659,11 @@ export function radarVisualization(
     .velocityDecay(0.19)
     .force('collision', d3.forceCollide().radius(12).strength(0.85))
     .on('tick', ticked)
+
+  // Fit after the first layout ticks so blips sit in their segments.
+  simulation.tick(50)
+  ticked()
+  fitSvgToContent()
 
   return () => {
     simulation.stop()

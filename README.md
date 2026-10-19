@@ -47,4 +47,6 @@ export function Page() {
 | `ring` | `0–2`, inside → outside (always 3 rings) |
 | `moved` | `-1` down, `0` unchanged, `1` up, `2` new |
 
+The SVG always auto-sizes to the radar content.
+
 Visualization logic is adapted from [zalando/tech-radar](https://github.com/zalando/tech-radar) (MIT).
