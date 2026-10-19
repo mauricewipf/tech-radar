@@ -94,6 +94,7 @@ export function radarVisualization(
       inactive: input.colors?.inactive ?? '#ddd',
     },
     print_layout: input.print_layout ?? true,
+    show_legend: input.show_legend ?? false,
     links_in_new_tabs: input.links_in_new_tabs ?? true,
     repo_url: input.repo_url ?? '#',
     legend_offset,
@@ -422,16 +423,18 @@ export function radarVisualization(
       .style('font-size', '14')
       .style('fill', '#999')
 
-    radar
-      .append('text')
-      .attr(
-        'transform',
-        translate(config.footer_offset.x, config.footer_offset.y),
-      )
-      .text('▲ moved up     ▼ moved down     ★ new     ⬤ no change')
-      .attr('xml:space', 'preserve')
-      .style('font-family', config.font_family)
-      .style('font-size', '12px')
+    if (config.show_legend) {
+      radar
+        .append('text')
+        .attr(
+          'transform',
+          translate(config.footer_offset.x, config.footer_offset.y),
+        )
+        .text('▲ moved up     ▼ moved down     ★ new     ⬤ no change')
+        .attr('xml:space', 'preserve')
+        .style('font-family', config.font_family)
+        .style('font-size', '12px')
+    }
 
     const legend = radar.append('g')
     for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {

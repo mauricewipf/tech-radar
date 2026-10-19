@@ -57,6 +57,8 @@ export interface TechRadarConfig {
   rings: [RadarRing, RadarRing, RadarRing]
   entries: RadarEntry[]
   print_layout?: boolean
+  /** Show the ▲/▼/★/⬤ movement key. Defaults to false. */
+  show_legend?: boolean
   links_in_new_tabs?: boolean
   zoomed_quadrant?: QuadrantIndex
   legend_offset?: [
