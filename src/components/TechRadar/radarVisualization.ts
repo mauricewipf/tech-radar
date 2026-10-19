@@ -1,10 +1,14 @@
 /**
- * Port of Zalando tech-radar visualization (radar.js).
+ * Port of Zalando tech-radar visualization (radar.js), fixed to 5 quadrants / 3 rings.
  * Based on https://github.com/zalando/tech-radar — MIT License
  * Copyright (c) 2017-2025 Zalando SE
  */
 import * as d3 from 'd3'
-import type { TechRadarConfig } from './types'
+import type { RadarOffset, TechRadarConfig } from './types'
+
+const QUADRANT_COUNT = 5
+const RING_COUNT = 3
+const OUTER_RADIUS = 400
 
 interface PolarPoint {
   t: number
@@ -36,28 +40,40 @@ interface RadarBlip {
   id: string
 }
 
-interface ResolvedConfig {
-  svg_id: string
-  width: number
-  height: number
-  scale: number
-  colors: { background: string; grid: string; inactive: string }
-  print_layout: boolean
-  links_in_new_tabs: boolean
-  repo_url: string
-  print_ring_descriptions_table: boolean
-  legend_offset: Array<{ x: number; y: number }>
-  title_offset: { x: number; y: number }
-  footer_offset: { x: number; y: number }
-  legend_column_width: number
-  legend_line_height: number
-  font_family: string
-  title: string
-  date: string
-  quadrants: Array<{ name: string }>
-  rings: Array<{ name: string; color: string; description?: string }>
-  entries: RadarBlip[]
-  zoomed_quadrant?: number
+interface Sector {
+  start: number
+  span: number
+}
+
+function normalizeAngle(t: number): number {
+  let a = t
+  while (a <= -Math.PI) a += 2 * Math.PI
+  while (a > Math.PI) a -= 2 * Math.PI
+  return a
+}
+
+function defaultLegendOffsets(): [
+  RadarOffset,
+  RadarOffset,
+  RadarOffset,
+  RadarOffset,
+  RadarOffset,
+] {
+  const span = (2 * Math.PI) / QUADRANT_COUNT
+  const legendR = OUTER_RADIUS + 130
+  return Array.from({ length: QUADRANT_COUNT }, (_, i) => {
+    const mid = span * i + span / 2
+    return {
+      x: legendR * Math.cos(mid) - 50,
+      y: legendR * Math.sin(mid) - 20,
+    }
+  }) as [
+    RadarOffset,
+    RadarOffset,
+    RadarOffset,
+    RadarOffset,
+    RadarOffset,
+  ]
 }
 
 export function radarVisualization(
@@ -65,10 +81,12 @@ export function radarVisualization(
   input: TechRadarConfig,
   svgId = 'radar',
 ): () => void {
-  const config: ResolvedConfig = {
+  const legend_offset = input.legend_offset ?? defaultLegendOffsets()
+
+  const config = {
     svg_id: svgId,
-    width: input.width ?? 1450,
-    height: input.height ?? 1000,
+    width: input.width ?? 1600,
+    height: input.height ?? 1100,
     scale: input.scale ?? 1,
     colors: {
       background: input.colors?.background ?? 'transparent',
@@ -78,15 +96,9 @@ export function radarVisualization(
     print_layout: input.print_layout ?? true,
     links_in_new_tabs: input.links_in_new_tabs ?? true,
     repo_url: input.repo_url ?? '#',
-    print_ring_descriptions_table: input.print_ring_descriptions_table ?? false,
-    legend_offset: input.legend_offset ?? [
-      { x: 450, y: 90 },
-      { x: -675, y: 90 },
-      { x: -675, y: -310 },
-      { x: 450, y: -310 },
-    ],
-    title_offset: input.title_offset ?? { x: -675, y: -420 },
-    footer_offset: input.footer_offset ?? { x: -155, y: 450 },
+    legend_offset,
+    title_offset: input.title_offset ?? { x: -675, y: -480 },
+    footer_offset: input.footer_offset ?? { x: -155, y: 520 },
     legend_column_width: input.legend_column_width ?? 140,
     legend_line_height: input.legend_line_height ?? 10,
     font_family: input.font_family ?? 'Arial, Helvetica',
@@ -126,18 +138,16 @@ export function radarVisualization(
     return min + (random() + random()) * 0.5 * (max - min)
   }
 
-  const quadrants = [
-    { radial_min: 0, radial_max: 0.5, factor_x: 1, factor_y: 1 },
-    { radial_min: 0.5, radial_max: 1, factor_x: -1, factor_y: 1 },
-    { radial_min: -1, radial_max: -0.5, factor_x: -1, factor_y: -1 },
-    { radial_min: -0.5, radial_max: 0, factor_x: 1, factor_y: -1 },
-  ]
+  const sectorSpan = (2 * Math.PI) / QUADRANT_COUNT
+  const sectors: Sector[] = Array.from({ length: QUADRANT_COUNT }, (_, i) => ({
+    start: sectorSpan * i,
+    span: sectorSpan,
+  }))
 
   const rings = [
-    { radius: 130 },
-    { radius: 220 },
-    { radius: 310 },
-    { radius: 400 },
+    { radius: 160 },
+    { radius: 280 },
+    { radius: OUTER_RADIUS },
   ]
 
   function polar(cartesian: CartesianPoint): PolarPoint {
@@ -155,63 +165,50 @@ export function radarVisualization(
   }
 
   function bounded_interval(value: number, min: number, max: number) {
-    const low = Math.min(min, max)
-    const high = Math.max(min, max)
-    return Math.min(Math.max(value, low), high)
+    return Math.min(Math.max(value, Math.min(min, max)), Math.max(min, max))
   }
 
-  function bounded_ring(p: PolarPoint, r_min: number, r_max: number): PolarPoint {
-    return {
-      t: p.t,
-      r: bounded_interval(p.r, r_min, r_max),
-    }
+  function relativeAngle(t: number, start: number) {
+    let rel = t - start
+    while (rel < 0) rel += 2 * Math.PI
+    while (rel >= 2 * Math.PI) rel -= 2 * Math.PI
+    return rel
   }
 
-  function bounded_box(
-    point: CartesianPoint,
-    min: CartesianPoint,
-    max: CartesianPoint,
-  ): CartesianPoint {
-    return {
-      x: bounded_interval(point.x, min.x, max.x),
-      y: bounded_interval(point.y, min.y, max.y),
-    }
+  function clampToSector(point: CartesianPoint, sector: Sector, rMin: number, rMax: number) {
+    const p = polar(point)
+    const margin = Math.min(0.08, sector.span / 6)
+    let rel = relativeAngle(p.t, sector.start)
+    rel = bounded_interval(rel, margin, sector.span - margin)
+    const r = bounded_interval(p.r, rMin, rMax)
+    return cartesian({ t: normalizeAngle(sector.start + rel), r })
   }
 
   function segment(quadrant: number, ring: number): Segment {
-    const polar_min = {
-      t: quadrants[quadrant].radial_min * Math.PI,
-      r: ring === 0 ? 30 : rings[ring - 1].radius,
-    }
-    const polar_max = {
-      t: quadrants[quadrant].radial_max * Math.PI,
-      r: rings[ring].radius,
-    }
-    const cartesian_min = {
-      x: 15 * quadrants[quadrant].factor_x,
-      y: 15 * quadrants[quadrant].factor_y,
-    }
-    const cartesian_max = {
-      x: rings[3].radius * quadrants[quadrant].factor_x,
-      y: rings[3].radius * quadrants[quadrant].factor_y,
-    }
+    const sector = sectors[quadrant]
+    const rMin = ring === 0 ? 30 : rings[ring - 1].radius
+    const rMax = rings[ring].radius
+    const pad = 15
+
     return {
       clipx(d) {
-        const c = bounded_box(d, cartesian_min, cartesian_max)
-        const p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15)
-        d.x = cartesian(p).x
+        const clipped = clampToSector(d, sector, rMin + pad, rMax - pad)
+        d.x = clipped.x
+        d.y = clipped.y
         return d.x
       },
       clipy(d) {
-        const c = bounded_box(d, cartesian_min, cartesian_max)
-        const p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15)
-        d.y = cartesian(p).y
+        const clipped = clampToSector(d, sector, rMin + pad, rMax - pad)
+        d.x = clipped.x
+        d.y = clipped.y
         return d.y
       },
       random() {
         return cartesian({
-          t: random_between(polar_min.t, polar_max.t),
-          r: normal_between(polar_min.r, polar_max.r),
+          t: normalizeAngle(
+            sector.start + random_between(0.1, sector.span - 0.1),
+          ),
+          r: normal_between(rMin + pad, rMax - pad),
         })
       },
     }
@@ -228,16 +225,16 @@ export function radarVisualization(
         : config.colors.inactive
   }
 
-  const segmented: RadarBlip[][][] = Array.from({ length: 4 }, () =>
-    Array.from({ length: 4 }, () => [] as RadarBlip[]),
+  const segmented: RadarBlip[][][] = Array.from({ length: QUADRANT_COUNT }, () =>
+    Array.from({ length: RING_COUNT }, () => [] as RadarBlip[]),
   )
   for (const entry of config.entries) {
     segmented[entry.quadrant][entry.ring].push(entry)
   }
 
   let id = 1
-  for (const quadrant of [2, 3, 1, 0]) {
-    for (let ring = 0; ring < 4; ring++) {
+  for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
+    for (let ring = 0; ring < RING_COUNT; ring++) {
       const entries = segmented[quadrant][ring]
       entries.sort((a, b) => a.label.localeCompare(b.label))
       for (const entry of entries) {
@@ -251,12 +248,11 @@ export function radarVisualization(
   }
 
   function viewbox(quadrant: number) {
-    return [
-      Math.max(0, quadrants[quadrant].factor_x * 400) - 420,
-      Math.max(0, quadrants[quadrant].factor_y * 400) - 420,
-      440,
-      440,
-    ].join(' ')
+    const sector = sectors[quadrant]
+    const mid = sector.start + sector.span / 2
+    const cx = Math.cos(mid) * 200
+    const cy = Math.sin(mid) * 200
+    return [cx - 220, cy - 220, 440, 440].join(' ')
   }
 
   const scaled_width = config.width * config.scale
@@ -283,22 +279,17 @@ export function radarVisualization(
 
   const grid = radar.append('g')
 
-  grid
-    .append('line')
-    .attr('x1', 0)
-    .attr('y1', -400)
-    .attr('x2', 0)
-    .attr('y2', 400)
-    .style('stroke', config.colors.grid)
-    .style('stroke-width', 1)
-  grid
-    .append('line')
-    .attr('x1', -400)
-    .attr('y1', 0)
-    .attr('x2', 400)
-    .attr('y2', 0)
-    .style('stroke', config.colors.grid)
-    .style('stroke-width', 1)
+  for (let i = 0; i < QUADRANT_COUNT; i++) {
+    const angle = sectors[i].start
+    grid
+      .append('line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', OUTER_RADIUS * Math.cos(angle))
+      .attr('y2', OUTER_RADIUS * Math.sin(angle))
+      .style('stroke', config.colors.grid)
+      .style('stroke-width', 1)
+  }
 
   const defs = grid.append('defs')
   const filter = defs
@@ -443,7 +434,7 @@ export function radarVisualization(
       .style('font-size', '12px')
 
     const legend = radar.append('g')
-    for (let quadrant = 0; quadrant < 4; quadrant++) {
+    for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
       legend
         .append('text')
         .attr(
@@ -459,7 +450,7 @@ export function radarVisualization(
         .style('font-weight', 'bold')
 
       let previousLegendHeight = 0
-      for (let ring = 0; ring < 4; ring++) {
+      for (let ring = 0; ring < RING_COUNT; ring++) {
         if (ring % 2 === 0) {
           previousLegendHeight = 0
         }

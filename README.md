@@ -1,6 +1,6 @@
 # Tech Radar (React)
 
-React + TypeScript port of [Zalando’s Tech Radar](https://opensource.zalando.com/tech-radar/) visualization (D3.js v7).
+React + TypeScript port of [Zalando’s Tech Radar](https://opensource.zalando.com/tech-radar/) visualization (D3.js v7), fixed to **5 quadrants** and **3 rings**.
 
 ## Run
 
@@ -22,12 +22,12 @@ const config: TechRadarConfig = {
     { name: 'Infrastructure' },
     { name: 'Datastores' },
     { name: 'Data Management' },
+    { name: 'Frameworks' },
   ],
   rings: [
     { name: 'ADOPT', color: '#5ba300' },
     { name: 'TRIAL', color: '#009eb0' },
     { name: 'ASSESS', color: '#c7ba00' },
-    { name: 'HOLD', color: '#e09b96' },
   ],
   entries: [
     { label: 'TypeScript', quadrant: 0, ring: 0, moved: 0 },
@@ -43,8 +43,8 @@ export function Page() {
 
 | Field | Meaning |
 | --- | --- |
-| `quadrant` | `0–3`, clockwise from bottom right |
-| `ring` | `0–3`, inside → outside |
+| `quadrant` | `0–4`, clockwise from +x (always 5 quadrants) |
+| `ring` | `0–2`, inside → outside (always 3 rings) |
 | `moved` | `-1` down, `0` unchanged, `1` up, `2` new |
 
 Visualization logic is adapted from [zalando/tech-radar](https://github.com/zalando/tech-radar) (MIT).

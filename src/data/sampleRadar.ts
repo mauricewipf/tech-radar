@@ -4,8 +4,8 @@ export const sampleRadarConfig: TechRadarConfig = {
   title: 'Tech Radar',
   date: '2026.10',
   repo_url: 'https://github.com/zalando/tech-radar',
-  width: 1450,
-  height: 1000,
+  width: 1600,
+  height: 1100,
   colors: {
     background: 'transparent',
     grid: '#dddde0',
@@ -19,12 +19,12 @@ export const sampleRadarConfig: TechRadarConfig = {
     { name: 'Infrastructure' },
     { name: 'Datastores' },
     { name: 'Data Management' },
+    { name: 'Frameworks' },
   ],
   rings: [
     { name: 'ADOPT', color: '#5ba300' },
     { name: 'TRIAL', color: '#009eb0' },
     { name: 'ASSESS', color: '#c7ba00' },
-    { name: 'HOLD', color: '#e09b96' },
   ],
   entries: [
     { label: 'TypeScript', quadrant: 0, ring: 0, moved: 0 },
@@ -33,7 +33,6 @@ export const sampleRadarConfig: TechRadarConfig = {
     { label: 'Rust', quadrant: 0, ring: 2, moved: 2 },
     { label: 'Kotlin', quadrant: 0, ring: 0, moved: 0 },
     { label: 'Scala', quadrant: 0, ring: 1, moved: 0 },
-    { label: 'Clojure', quadrant: 0, ring: 3, moved: -1 },
 
     { label: 'Kubernetes', quadrant: 1, ring: 0, moved: 0 },
     { label: 'Docker', quadrant: 1, ring: 0, moved: 0 },
@@ -41,15 +40,13 @@ export const sampleRadarConfig: TechRadarConfig = {
     { label: 'OpenTelemetry', quadrant: 1, ring: 0, moved: 0 },
     { label: 'AWS Lambda', quadrant: 1, ring: 1, moved: 0 },
     { label: 'WebAssembly', quadrant: 1, ring: 1, moved: 2 },
-    { label: 'GraalVM', quadrant: 1, ring: 3, moved: 0 },
 
     { label: 'PostgreSQL', quadrant: 2, ring: 0, moved: 0 },
     { label: 'Redis', quadrant: 2, ring: 0, moved: 0 },
     { label: 'Elasticsearch', quadrant: 2, ring: 0, moved: 0 },
     { label: 'DynamoDB', quadrant: 2, ring: 0, moved: 0 },
     { label: 'ClickHouse', quadrant: 2, ring: 1, moved: 2 },
-    { label: 'MongoDB', quadrant: 2, ring: 3, moved: -1 },
-    { label: 'Cassandra', quadrant: 2, ring: 3, moved: 0 },
+    { label: 'MongoDB', quadrant: 2, ring: 2, moved: -1 },
 
     { label: 'Kafka', quadrant: 3, ring: 0, moved: 0 },
     { label: 'Spark', quadrant: 3, ring: 0, moved: 0 },
@@ -57,6 +54,12 @@ export const sampleRadarConfig: TechRadarConfig = {
     { label: 'dbt', quadrant: 3, ring: 1, moved: 0 },
     { label: 'Flink', quadrant: 3, ring: 0, moved: 1 },
     { label: 'Streamlit', quadrant: 3, ring: 2, moved: 0 },
-    { label: 'RabbitMQ', quadrant: 3, ring: 1, moved: 0 },
+
+    { label: 'React', quadrant: 4, ring: 0, moved: 0 },
+    { label: 'Next.js', quadrant: 4, ring: 0, moved: 1 },
+    { label: 'Vue', quadrant: 4, ring: 1, moved: 0 },
+    { label: 'Svelte', quadrant: 4, ring: 2, moved: 2 },
+    { label: 'Angular', quadrant: 4, ring: 2, moved: -1 },
+    { label: 'Remix', quadrant: 4, ring: 1, moved: 0 },
   ],
 }

@@ -25,11 +25,13 @@ export function TechRadar({ config }: TechRadarProps) {
 
 export type {
   MovedStatus,
+  QuadrantIndex,
   RadarColors,
   RadarEntry,
   RadarOffset,
   RadarQuadrant,
   RadarRing,
+  RingIndex,
   TechRadarConfig,
   TechRadarProps,
 } from './types'
