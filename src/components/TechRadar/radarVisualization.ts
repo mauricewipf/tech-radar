@@ -9,6 +9,7 @@ import type { RadarOffset, TechRadarConfig } from './types'
 const QUADRANT_COUNT = 5
 const RING_COUNT = 3
 const OUTER_RADIUS = 400
+const DIVIDER_STROKE_WIDTH = 12
 
 interface PolarPoint {
   t: number
@@ -282,17 +283,7 @@ export function radarVisualization(
 
   const grid = radar.append('g')
 
-  for (let i = 0; i < QUADRANT_COUNT; i++) {
-    const angle = sectors[i].start
-    grid
-      .append('line')
-      .attr('x1', 0)
-      .attr('y1', 0)
-      .attr('x2', OUTER_RADIUS * Math.cos(angle))
-      .attr('y2', OUTER_RADIUS * Math.sin(angle))
-      .style('stroke', config.colors.grid)
-      .style('stroke-width', 1)
-  }
+  const dividerMaskId = `${config.svg_id}-divider-mask`
 
   const defs = grid.append('defs')
   const filter = defs
@@ -305,22 +296,68 @@ export function radarVisualization(
   filter.append('feFlood').attr('flood-color', 'rgb(0, 0, 0, 0.8)')
   filter.append('feComposite').attr('in', 'SourceGraphic')
 
-  for (let i = 0; i < rings.length; i++) {
-    grid
+  // Mask punches divider gaps so the SVG background shows through.
+  const dividerMask = defs
+    .append('mask')
+    .attr('id', dividerMaskId)
+    .attr('maskUnits', 'userSpaceOnUse')
+    .attr('x', -OUTER_RADIUS)
+    .attr('y', -OUTER_RADIUS)
+    .attr('width', OUTER_RADIUS * 2)
+    .attr('height', OUTER_RADIUS * 2)
+  dividerMask
+    .append('rect')
+    .attr('x', -OUTER_RADIUS)
+    .attr('y', -OUTER_RADIUS)
+    .attr('width', OUTER_RADIUS * 2)
+    .attr('height', OUTER_RADIUS * 2)
+    .attr('fill', 'white')
+  for (let i = 0; i < rings.length - 1; i++) {
+    dividerMask
       .append('circle')
       .attr('cx', 0)
       .attr('cy', 0)
       .attr('r', rings[i].radius)
-      .style('fill', 'none')
-      .style('stroke', config.colors.grid)
-      .style('stroke-width', 1)
+      .attr('fill', 'none')
+      .attr('stroke', 'black')
+      .attr('stroke-width', DIVIDER_STROKE_WIDTH)
+  }
+  for (let i = 0; i < QUADRANT_COUNT; i++) {
+    const angle = sectors[i].start
+    dividerMask
+      .append('line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', OUTER_RADIUS * Math.cos(angle))
+      .attr('y2', OUTER_RADIUS * Math.sin(angle))
+      .attr('stroke', 'black')
+      .attr('stroke-width', DIVIDER_STROKE_WIDTH)
+  }
+
+  const ringFills = grid
+    .append('g')
+    .attr('mask', `url(#${dividerMaskId})`)
+
+  // Fill ring bands outer → inner so each ring keeps its own color.
+  for (let i = rings.length - 1; i >= 0; i--) {
+    ringFills
+      .append('circle')
+      .attr('cx', 0)
+      .attr('cy', 0)
+      .attr('r', rings[i].radius)
+      .style('fill', config.rings[i].color)
+      .style('fill-opacity', 0.28)
+      .style('stroke', 'none')
+  }
+
+  for (let i = 0; i < rings.length; i++) {
     if (config.print_layout) {
       grid
         .append('text')
         .text(config.rings[i].name)
         .attr('y', -rings[i].radius + 62)
         .attr('text-anchor', 'middle')
-        .style('fill', config.rings[i].color)
+        .style('fill', '#000')
         .style('opacity', 0.35)
         .style('font-family', config.font_family)
         .style('font-size', '42px')
@@ -586,23 +623,26 @@ export function radarVisualization(
           })()
         : root
 
+    const blipFill =
+      d.active || config.print_layout ? '#000' : config.colors.inactive
+
     if (d.moved === 1) {
       blip
         .append('path')
         .attr('d', 'M -11,5 11,5 0,-13 z')
-        .style('fill', d.color)
+        .style('fill', blipFill)
     } else if (d.moved === -1) {
       blip
         .append('path')
         .attr('d', 'M -11,-5 11,-5 0,13 z')
-        .style('fill', d.color)
+        .style('fill', blipFill)
     } else if (d.moved === 2) {
       blip
         .append('path')
         .attr('d', d3.symbol().type(d3.symbolStar).size(200)())
-        .style('fill', d.color)
+        .style('fill', blipFill)
     } else {
-      blip.append('circle').attr('r', 9).attr('fill', d.color)
+      blip.append('circle').attr('r', 9).attr('fill', blipFill)
     }
 
     if (d.active || config.print_layout) {
