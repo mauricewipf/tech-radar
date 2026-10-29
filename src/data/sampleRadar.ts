@@ -17,7 +17,7 @@ export const sampleRadarConfig: TechRadarConfig = {
     { name: 'Frameworks' },
   ],
   rings: [
-    { name: 'ADOPT', color: '#5ba300' },
+    { name: 'ACT', color: '#5ba300' },
     { name: 'TRIAL', color: '#009eb0' },
     { name: 'ASSESS', color: '#c7ba00' },
   ],

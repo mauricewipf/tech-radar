@@ -10,6 +10,13 @@ const QUADRANT_COUNT = 5
 const RING_COUNT = 3
 const OUTER_RADIUS = 400
 const DIVIDER_STROKE_WIDTH = 12
+/** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
+const TOP_QUADRANT = 3
+
+function sectorMidAngle(quadrant: number): number {
+  const span = (2 * Math.PI) / QUADRANT_COUNT
+  return -Math.PI / 2 + (quadrant - TOP_QUADRANT) * span
+}
 
 interface PolarPoint {
   t: number
@@ -60,12 +67,13 @@ function defaultLegendOffsets(): [
   RadarOffset,
   RadarOffset,
 ] {
-  const span = (2 * Math.PI) / QUADRANT_COUNT
   const legendR = OUTER_RADIUS + 130
   return Array.from({ length: QUADRANT_COUNT }, (_, i) => {
-    const mid = span * i + span / 2
+    const mid = sectorMidAngle(i)
+    // Top-centered quadrant: shift legend left so the two columns sit under the title.
+    const atTop = i === TOP_QUADRANT
     return {
-      x: legendR * Math.cos(mid) - 50,
+      x: legendR * Math.cos(mid) - (atTop ? 70 : 50),
       y: legendR * Math.sin(mid) - 20,
     }
   }) as [
@@ -136,7 +144,7 @@ export function radarVisualization(
 
   const sectorSpan = (2 * Math.PI) / QUADRANT_COUNT
   const sectors: Sector[] = Array.from({ length: QUADRANT_COUNT }, (_, i) => ({
-    start: sectorSpan * i,
+    start: sectorMidAngle(i) - sectorSpan / 2,
     span: sectorSpan,
   }))
 
@@ -455,15 +463,18 @@ export function radarVisualization(
 
     const legend = radar.append('g')
     for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
+      // Titles sit above their legend lists (not on the ring radius) to avoid overlap.
+      const offset = config.legend_offset[quadrant]
       legend
         .append('text')
         .attr(
           'transform',
           translate(
-            config.legend_offset[quadrant].x,
-            config.legend_offset[quadrant].y - 45,
+            quadrant === TOP_QUADRANT ? 0 : offset.x,
+            offset.y - 45,
           ),
         )
+        .attr('text-anchor', quadrant === TOP_QUADRANT ? 'middle' : 'start')
         .text(config.quadrants[quadrant].name)
         .style('font-family', config.font_family)
         .style('font-size', '18px')

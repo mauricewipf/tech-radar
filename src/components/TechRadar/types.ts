@@ -6,7 +6,7 @@ export type MovedStatus = -1 | 0 | 1 | 2
 
 export interface RadarEntry {
   label: string
-  /** 0–4 clockwise from +x / bottom-right */
+  /** 0–4 clockwise; quadrant 3 is centered at the top */
   quadrant: QuadrantIndex
   /** 0–2 from inside to outside */
   ring: RingIndex
