@@ -79,12 +79,12 @@ function defaultLegendOffsets(): [
       y: legendR * Math.sin(mid) - 20,
     }
   }) as [
-    RadarOffset,
-    RadarOffset,
-    RadarOffset,
-    RadarOffset,
-    RadarOffset,
-  ]
+      RadarOffset,
+      RadarOffset,
+      RadarOffset,
+      RadarOffset,
+      RadarOffset,
+    ]
 }
 
 export function radarVisualization(
@@ -435,7 +435,7 @@ export function radarVisualization(
 
         if (
           (tspan.node() as SVGTSpanElement).getComputedTextLength() >
-            config.legend_column_width &&
+          config.legend_column_width &&
           position !== 1
         ) {
           line.pop()
@@ -635,12 +635,12 @@ export function radarVisualization(
     const blip =
       d.active && d.link
         ? (() => {
-            const link = root.append('a').attr('xlink:href', d.link)
-            if (config.links_in_new_tabs) {
-              link.attr('target', '_blank')
-            }
-            return link
-          })()
+          const link = root.append('a').attr('xlink:href', d.link)
+          if (config.links_in_new_tabs) {
+            link.attr('target', '_blank')
+          }
+          return link
+        })()
         : root
 
     const blipFill =
