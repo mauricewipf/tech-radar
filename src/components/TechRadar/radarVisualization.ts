@@ -458,29 +458,29 @@ export function radarVisualization(
     .style('opacity', 0)
     .style('pointer-events', 'none')
     .style('user-select', 'none')
-  bubble.append('rect').attr('rx', 4).attr('ry', 4).style('fill', '#333')
+  bubble.append('rect').attr('rx', 8).attr('ry', 8).style('fill', '#333')
   bubble
     .append('text')
     .style('font-family', config.font_family)
-    .style('font-size', '10px')
+    .style('font-size', '20px')
     .style('fill', '#fff')
-  bubble.append('path').attr('d', 'M 0,0 10,0 5,8 z').style('fill', '#333')
+  bubble.append('path').attr('d', 'M 0,0 20,0 10,16 z').style('fill', '#333')
 
   function showBubble(d: RadarBlip) {
     if (d.active || config.print_layout) {
       const tooltip = d3.select(`#${bubbleId} text`).text(d.label)
       const bbox = (tooltip.node() as SVGTextElement).getBBox()
       d3.select(`#${bubbleId}`)
-        .attr('transform', translate(d.x - bbox.width / 2, d.y - 16))
+        .attr('transform', translate(d.x - bbox.width / 2, d.y - 32))
         .style('opacity', 0.8)
       d3.select(`#${bubbleId} rect`)
-        .attr('x', -5)
+        .attr('x', -10)
         .attr('y', -bbox.height)
-        .attr('width', bbox.width + 10)
-        .attr('height', bbox.height + 4)
+        .attr('width', bbox.width + 20)
+        .attr('height', bbox.height + 8)
       d3.select(`#${bubbleId} path`).attr(
         'transform',
-        translate(bbox.width / 2 - 5, 3),
+        translate(bbox.width / 2 - 10, 6),
       )
     }
   }
@@ -544,20 +544,20 @@ export function radarVisualization(
     if (d.moved === 1) {
       blip
         .append('path')
-        .attr('d', 'M -11,5 11,5 0,-13 z')
+        .attr('d', 'M -22,10 22,10 0,-26 z')
         .style('fill', blipFill)
     } else if (d.moved === -1) {
       blip
         .append('path')
-        .attr('d', 'M -11,-5 11,-5 0,13 z')
+        .attr('d', 'M -22,-10 22,-10 0,26 z')
         .style('fill', blipFill)
     } else if (d.moved === 2) {
       blip
         .append('path')
-        .attr('d', d3.symbol().type(d3.symbolStar).size(200)())
+        .attr('d', d3.symbol().type(d3.symbolStar).size(800)())
         .style('fill', blipFill)
     } else {
-      blip.append('circle').attr('r', 9).attr('fill', blipFill)
+      blip.append('circle').attr('r', 18).attr('fill', blipFill)
     }
 
     if (d.active || config.print_layout) {
@@ -567,11 +567,11 @@ export function radarVisualization(
       blip
         .append('text')
         .text(blip_text)
-        .attr('y', 3)
+        .attr('y', 6)
         .attr('text-anchor', 'middle')
         .style('fill', '#fff')
         .style('font-family', config.font_family)
-        .style('font-size', blip_text.length > 2 ? '8px' : '9px')
+        .style('font-size', blip_text.length > 2 ? '16px' : '18px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
     }
@@ -585,12 +585,13 @@ export function radarVisualization(
 
   const simulation = d3
     .forceSimulation(config.entries)
-    .velocityDecay(0.19)
-    .force('collision', d3.forceCollide().radius(12).strength(0.85))
+    .velocityDecay(0.22)
+    // Collide radius matches doubled circle blips (r=18) with a little slack.
+    .force('collision', d3.forceCollide().radius(19).strength(1).iterations(4))
     .on('tick', ticked)
 
-  // Fit after the first layout ticks so blips sit in their segments.
-  simulation.tick(50)
+  // Fit after layout ticks so blips settle without stacking.
+  simulation.tick(150)
   ticked()
   fitSvgToContent()
 
