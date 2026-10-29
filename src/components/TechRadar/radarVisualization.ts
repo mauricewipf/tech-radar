@@ -10,6 +10,8 @@ const QUADRANT_COUNT = 5
 const RING_COUNT = 3
 const OUTER_RADIUS = 400
 const DIVIDER_STROKE_WIDTH = 12
+/** Transparent hole in the center of the innermost ring. */
+const INNER_HOLE_RADIUS = 55
 /** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
 const TOP_QUADRANT = 3
 
@@ -190,7 +192,7 @@ export function radarVisualization(
 
   function segment(quadrant: number, ring: number): Segment {
     const sector = sectors[quadrant]
-    const rMin = ring === 0 ? 30 : rings[ring - 1].radius
+    const rMin = ring === 0 ? INNER_HOLE_RADIUS : rings[ring - 1].radius
     const rMax = rings[ring].radius
     const pad = 15
 
@@ -320,6 +322,13 @@ export function radarVisualization(
     .attr('width', OUTER_RADIUS * 2)
     .attr('height', OUTER_RADIUS * 2)
     .attr('fill', 'white')
+  // Punch a transparent circular hole in the middle.
+  dividerMask
+    .append('circle')
+    .attr('cx', 0)
+    .attr('cy', 0)
+    .attr('r', INNER_HOLE_RADIUS)
+    .attr('fill', 'black')
   for (let i = 0; i < rings.length - 1; i++) {
     dividerMask
       .append('circle')
