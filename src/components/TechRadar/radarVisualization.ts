@@ -69,7 +69,7 @@ function defaultLegendOffsets(): [
   RadarOffset,
   RadarOffset,
 ] {
-  const legendR = OUTER_RADIUS + 130
+  const legendR = OUTER_RADIUS + 90
   return Array.from({ length: QUADRANT_COUNT }, (_, i) => {
     const mid = sectorMidAngle(i)
     // Top-centered quadrant: shift legend left so the two columns sit under the title.
@@ -388,72 +388,20 @@ export function radarVisualization(
     quadrant: number,
     ring: number,
     legendColumnWidth: number,
-    index: number | null = null,
+    index: number,
     previousHeight: number | null = null,
   ) {
     const dx = ring < 2 ? 0 : legendColumnWidth
-    let dy = index == null ? -16 : index * config.legend_line_height
+    let dy = index * config.legend_line_height
 
     if (ring % 2 === 1) {
-      dy = dy + 36 + (previousHeight ?? 0)
+      dy = dy + 12 + (previousHeight ?? 0)
     }
 
     return translate(
       config.legend_offset[quadrant].x + dx,
       config.legend_offset[quadrant].y + dy,
     )
-  }
-
-  function wrap_text(
-    text: d3.Selection<SVGTextElement, RadarBlip, SVGGElement, unknown>,
-  ) {
-    let heightForNextElement = 0
-
-    text.each(function () {
-      const textElement = d3.select(this as SVGTextElement)
-      const words = textElement.text().split(' ')
-      const line: string[] = []
-
-      const number = `${textElement.text().split('.')[0]}. |`
-      const legendNumberText = textElement.append('tspan').text(number)
-      const legendBar = textElement.append('tspan').text('|')
-      const numberWidth =
-        (legendNumberText.node() as SVGTSpanElement).getComputedTextLength() -
-        (legendBar.node() as SVGTSpanElement).getComputedTextLength()
-
-      textElement.text(null)
-
-      let tspan = textElement
-        .append('tspan')
-        .attr('x', 0)
-        .attr('y', heightForNextElement)
-        .attr('dy', 0)
-
-      for (let position = 0; position < words.length; position++) {
-        line.push(words[position])
-        tspan.text(line.join(' '))
-
-        if (
-          (tspan.node() as SVGTSpanElement).getComputedTextLength() >
-          config.legend_column_width &&
-          position !== 1
-        ) {
-          line.pop()
-          tspan.text(line.join(' '))
-          line.length = 0
-          line.push(words[position])
-
-          tspan = textElement
-            .append('tspan')
-            .attr('x', numberWidth)
-            .attr('dy', config.legend_line_height)
-            .text(words[position])
-        }
-      }
-
-      const textBoundingBox = (textElement.node() as SVGTextElement).getBBox()
-      heightForNextElement = textBoundingBox.y + textBoundingBox.height
-    })
   }
 
   if (config.print_layout) {
@@ -472,84 +420,31 @@ export function radarVisualization(
 
     const legend = radar.append('g')
     for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
-      // Titles sit above their legend lists (not on the ring radius) to avoid overlap.
       const offset = config.legend_offset[quadrant]
+      const atTop = quadrant === TOP_QUADRANT
+      let x: number
+      let y: number
+      if (atTop) {
+        // Top heading sits just outside the ring.
+        x = 0
+        y = -(OUTER_RADIUS + 28)
+      } else if (offset.x > 0) {
+        // Right-side headings: shift left until the title overlaps the outer ring.
+        y = offset.y
+        const ringX = Math.sqrt(OUTER_RADIUS * OUTER_RADIUS - y * y)
+        x = ringX - 70
+      } else {
+        x = offset.x
+        y = offset.y
+      }
       legend
         .append('text')
-        .attr(
-          'transform',
-          translate(
-            quadrant === TOP_QUADRANT ? 0 : offset.x,
-            offset.y - 45,
-          ),
-        )
-        .attr('text-anchor', quadrant === TOP_QUADRANT ? 'middle' : 'start')
+        .attr('transform', translate(x, y))
+        .attr('text-anchor', atTop ? 'middle' : 'start')
         .text(config.quadrants[quadrant].name)
         .style('font-family', config.font_family)
-        .style('font-size', '18px')
+        .style('font-size', '36px')
         .style('font-weight', 'bold')
-
-      let previousLegendHeight = 0
-      for (let ring = 0; ring < RING_COUNT; ring++) {
-        if (ring % 2 === 0) {
-          previousLegendHeight = 0
-        }
-        legend
-          .append('text')
-          .attr(
-            'transform',
-            legend_transform(
-              quadrant,
-              ring,
-              config.legend_column_width,
-              null,
-              previousLegendHeight,
-            ),
-          )
-          .text(config.rings[ring].name)
-          .style('font-family', config.font_family)
-          .style('font-size', '12px')
-          .style('font-weight', 'bold')
-          .style('fill', config.rings[ring].color)
-
-        legend
-          .selectAll(`.legend${quadrant}${ring}`)
-          .data(segmented[quadrant][ring])
-          .enter()
-          .append('a')
-          .attr('href', (d) => (d.link ? d.link : '#'))
-          .attr('target', (d) =>
-            d.link && config.links_in_new_tabs ? '_blank' : null,
-          )
-          .append('text')
-          .attr('transform', (_d, i) =>
-            legend_transform(
-              quadrant,
-              ring,
-              config.legend_column_width,
-              i,
-              previousLegendHeight,
-            ),
-          )
-          .attr('class', `legend${quadrant}${ring}`)
-          .attr('id', (d) => `${config.svg_id}-legendItem${d.id}`)
-          .text((d) => `${d.id}. ${d.label}`)
-          .style('font-family', config.font_family)
-          .style('font-size', '11px')
-          .on('mouseover', (_event, d) => {
-            showBubble(d)
-            highlightLegendItem(d)
-          })
-          .on('mouseout', (_event, d) => {
-            hideBubble()
-            unhighlightLegendItem(d)
-          })
-          .call(wrap_text)
-          .each(function () {
-            previousLegendHeight += (d3.select(this).node() as SVGTextElement)
-              .getBBox().height
-          })
-      }
     }
   }
 
