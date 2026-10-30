@@ -130,7 +130,7 @@ export function radarVisualization(
 
   d3.select(svgElement).selectAll('*').remove()
 
-  let seed = 42
+  let seed = 42 // Edit this to reorder blips
   function random() {
     const x = Math.sin(seed++) * 10000
     return x - Math.floor(x)
