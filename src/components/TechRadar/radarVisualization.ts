@@ -445,6 +445,7 @@ export function radarVisualization(
         .style('font-family', config.font_family)
         .style('font-size', '36px')
         .style('font-weight', 'bold')
+        .style('fill', '#000')
     }
   }
 
