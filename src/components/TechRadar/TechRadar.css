@@ -8,3 +8,28 @@
   max-width: 100%;
   height: auto;
 }
+
+.tech-radar .blip {
+  cursor: pointer;
+  outline: none;
+}
+
+.tech-radar .blip-focus-ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.tech-radar .blip.blip--focused .blip-focus-ring {
+  stroke: #2563eb;
+}
+
+.tech-radar .blip.blip--focused a > circle,
+.tech-radar .blip.blip--focused a > path,
+.tech-radar .blip.blip--focused > circle:not(.blip-focus-ring),
+.tech-radar .blip.blip--focused > path {
+  stroke: #fff;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+}

@@ -231,6 +231,8 @@ export function radarVisualization(
         : config.colors.inactive
   }
 
+  // Order independently of fetch/array order: quadrant → ring → label.
+  const orderedEntries: RadarBlip[] = []
   const segmented: RadarBlip[][][] = Array.from({ length: QUADRANT_COUNT }, () =>
     Array.from({ length: RING_COUNT }, () => [] as RadarBlip[]),
   )
@@ -245,6 +247,7 @@ export function radarVisualization(
       entries.sort((a, b) => a.label.localeCompare(b.label))
       for (const entry of entries) {
         entry.id = String(id++)
+        orderedEntries.push(entry)
       }
     }
   }
@@ -508,30 +511,76 @@ export function radarVisualization(
     legendItem?.removeAttribute('fill')
   }
 
+  function activateBlip(el: Element, d: RadarBlip) {
+    d3.select(el).classed('blip--focused', true)
+    showBubble(d)
+    highlightLegendItem(d)
+  }
+
+  function deactivateBlip(el: Element, d: RadarBlip) {
+    d3.select(el).classed('blip--focused', false)
+    hideBubble()
+    unhighlightLegendItem(d)
+  }
+
   const blips = rink
     .selectAll('.blip')
-    .data(config.entries)
+    .data(orderedEntries)
     .enter()
     .append('g')
     .attr('class', 'blip')
+    .attr('tabindex', 0)
+    .attr('focusable', true)
+    .attr('role', (d) => (d.active && d.link ? 'link' : 'button'))
+    .attr('aria-label', (d) => d.label)
     .attr('transform', (d, i) =>
       legend_transform(d.quadrant, d.ring, config.legend_column_width, i),
     )
-    .on('mouseover', (_event, d) => {
-      showBubble(d)
-      highlightLegendItem(d)
+    .on('mouseover', function (_event, d) {
+      activateBlip(this, d)
     })
-    .on('mouseout', (_event, d) => {
-      hideBubble()
-      unhighlightLegendItem(d)
+    .on('mouseout', function (_event, d) {
+      if (document.activeElement !== this) {
+        deactivateBlip(this, d)
+      }
+    })
+    .on('focus', function (_event, d) {
+      activateBlip(this, d)
+    })
+    .on('blur', function (_event, d) {
+      deactivateBlip(this, d)
+    })
+    .on('keydown', function (event, d) {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return
+      }
+      // Avoid page scroll on Space when a blip is focused.
+      event.preventDefault()
+      if (!d.active || !d.link) {
+        return
+      }
+      if (config.links_in_new_tabs) {
+        window.open(d.link, '_blank', 'noopener,noreferrer')
+      } else {
+        window.location.assign(d.link)
+      }
     })
 
   blips.each(function (d) {
     const root = d3.select(this)
+
+    root
+      .append('circle')
+      .attr('class', 'blip-focus-ring')
+      .attr('r', 26)
+
     const blip =
       d.active && d.link
         ? (() => {
-          const link = root.append('a').attr('xlink:href', d.link)
+          const link = root
+            .append('a')
+            .attr('xlink:href', d.link)
+            .attr('tabindex', -1)
           if (config.links_in_new_tabs) {
             link.attr('target', '_blank')
           }
