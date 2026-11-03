@@ -1,4 +1,5 @@
 export { TechRadar } from './TechRadar'
+export { orderRadarEntries } from './radarVisualization'
 export type {
   MovedStatus,
   QuadrantIndex,

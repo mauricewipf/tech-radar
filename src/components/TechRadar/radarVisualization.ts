@@ -4,7 +4,7 @@
  * Copyright (c) 2017-2025 Zalando SE
  */
 import * as d3 from 'd3'
-import type { RadarOffset, TechRadarConfig } from './types'
+import type { RadarEntry, RadarOffset, TechRadarConfig } from './types'
 
 const QUADRANT_COUNT = 5
 const RING_COUNT = 3
@@ -14,6 +14,38 @@ const DIVIDER_STROKE_WIDTH = 12
 const INNER_HOLE_RADIUS = 55
 /** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
 const TOP_QUADRANT = 3
+
+/**
+ * Order radar entries independently of fetch/array order:
+ * quadrant → ring → label (alphabetical), then assign sequential string ids.
+ */
+export function orderRadarEntries<
+  T extends Pick<RadarEntry, 'label' | 'quadrant' | 'ring'>,
+>(entries: readonly T[]): Array<T & { id: string }> {
+  const ordered: Array<T & { id: string }> = []
+  const segmented: T[][][] = Array.from({ length: QUADRANT_COUNT }, () =>
+    Array.from({ length: RING_COUNT }, () => [] as T[]),
+  )
+
+  for (const entry of entries) {
+    segmented[entry.quadrant][entry.ring].push(entry)
+  }
+
+  let id = 1
+  for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
+    for (let ring = 0; ring < RING_COUNT; ring++) {
+      const group = segmented[quadrant][ring]
+      group.sort((a, b) => a.label.localeCompare(b.label))
+      for (const entry of group) {
+        const withId = entry as T & { id: string }
+        withId.id = String(id++)
+        ordered.push(withId)
+      }
+    }
+  }
+
+  return ordered
+}
 
 function sectorMidAngle(quadrant: number): number {
   const span = (2 * Math.PI) / QUADRANT_COUNT
@@ -231,26 +263,7 @@ export function radarVisualization(
         : config.colors.inactive
   }
 
-  // Order independently of fetch/array order: quadrant → ring → label.
-  const orderedEntries: RadarBlip[] = []
-  const segmented: RadarBlip[][][] = Array.from({ length: QUADRANT_COUNT }, () =>
-    Array.from({ length: RING_COUNT }, () => [] as RadarBlip[]),
-  )
-  for (const entry of config.entries) {
-    segmented[entry.quadrant][entry.ring].push(entry)
-  }
-
-  let id = 1
-  for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
-    for (let ring = 0; ring < RING_COUNT; ring++) {
-      const entries = segmented[quadrant][ring]
-      entries.sort((a, b) => a.label.localeCompare(b.label))
-      for (const entry of entries) {
-        entry.id = String(id++)
-        orderedEntries.push(entry)
-      }
-    }
-  }
+  const orderedEntries = orderRadarEntries(config.entries)
 
   function translate(x: number, y: number) {
     return `translate(${x},${y})`
