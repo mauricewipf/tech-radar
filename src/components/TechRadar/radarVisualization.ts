@@ -545,7 +545,11 @@ export function radarVisualization(
     .attr('tabindex', 0)
     .attr('focusable', true)
     .attr('role', (d) => (d.active && d.link ? 'link' : 'button'))
-    .attr('aria-label', (d) => d.label)
+    .attr(
+      'aria-label',
+      (d) =>
+        `${d.label}, ${config.quadrants[d.quadrant].name}, ${config.rings[d.ring].name}`,
+    )
     .attr('transform', (d, i) =>
       legend_transform(d.quadrant, d.ring, config.legend_column_width, i),
     )
