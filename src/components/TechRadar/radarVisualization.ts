@@ -1,7 +1,6 @@
 /**
  * Port of Zalando tech-radar visualization (radar.js), fixed to 5 quadrants / 3 rings.
  * Based on https://github.com/zalando/tech-radar — MIT License
- * Copyright (c) 2017-2025 Zalando SE
  */
 import * as d3 from 'd3'
 import type { RadarEntry, RadarOffset, TechRadarConfig } from './types'
