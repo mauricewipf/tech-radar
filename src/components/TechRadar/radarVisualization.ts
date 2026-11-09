@@ -13,6 +13,12 @@ const DIVIDER_STROKE_WIDTH = 12
 const INNER_HOLE_RADIUS = 55
 /** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
 const TOP_QUADRANT = 3
+/**
+ * Shared baseline for the bottom-side quadrant titles (Q0 right, Q1 left).
+ * Raised from the sector mid so the labels sit further up/out while still
+ * overlapping the outer ASSESS ring.
+ */
+const BOTTOM_SIDE_LABEL_Y = 300
 
 /**
  * Order radar entries independently of fetch/array order:
@@ -446,7 +452,8 @@ export function radarVisualization(
         y = -(OUTER_RADIUS + 28)
       } else {
         // Side headings: nudge toward the ring so the title overlaps the outer edge.
-        y = offset.y
+        // Bottom pair (Q0/Q1) share a raised y so both sit further up/out on ASSESS.
+        y = offset.y > 0 ? BOTTOM_SIDE_LABEL_Y : offset.y
         const ringX = Math.sqrt(OUTER_RADIUS * OUTER_RADIUS - y * y)
         x = onLeft ? -ringX + 70 : ringX - 70
       }
