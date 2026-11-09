@@ -439,23 +439,21 @@ export function radarVisualization(
       const atTop = quadrant === TOP_QUADRANT
       let x: number
       let y: number
+      const onLeft = !atTop && offset.x <= 0
       if (atTop) {
         // Top heading sits just outside the ring.
         x = 0
         y = -(OUTER_RADIUS + 28)
-      } else if (offset.x > 0) {
-        // Right-side headings: shift left until the title overlaps the outer ring.
+      } else {
+        // Side headings: nudge toward the ring so the title overlaps the outer edge.
         y = offset.y
         const ringX = Math.sqrt(OUTER_RADIUS * OUTER_RADIUS - y * y)
-        x = ringX - 70
-      } else {
-        x = offset.x
-        y = offset.y
+        x = onLeft ? -ringX + 70 : ringX - 70
       }
       legend
         .append('text')
         .attr('transform', translate(x, y))
-        .attr('text-anchor', atTop ? 'middle' : 'start')
+        .attr('text-anchor', atTop ? 'middle' : onLeft ? 'end' : 'start')
         .text(config.quadrants[quadrant].name)
         .style('font-family', config.font_family)
         .style('font-size', '36px')
