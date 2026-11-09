@@ -84,15 +84,15 @@ describe('radarVisualization', () => {
   it('labels blips for assistive tech', () => {
     dispose = radarVisualization(svg, minimalConfig, 'test-radar')
 
-    const typescript = svg.querySelector('[aria-label^="TypeScript"]')
+    const typescript = svg.querySelector('[aria-label^="Trend \'TypeScript\'"]')
     expect(typescript).not.toBeNull()
     expect(typescript).toHaveAttribute(
       'aria-label',
-      'TypeScript, Languages, ACT',
+      'Trend \'TypeScript\' in quadrant \'Languages\' and ring \'ACT\'',
     )
     expect(typescript).toHaveAttribute('role', 'button')
 
-    const postgres = svg.querySelector('[aria-label^="PostgreSQL"]')
+    const postgres = svg.querySelector('[aria-label^="Trend \'PostgreSQL\'"]')
     expect(postgres).toHaveAttribute('role', 'link')
   })
 

@@ -547,7 +547,7 @@ export function radarVisualization(
     .attr(
       'aria-label',
       (d) =>
-        `${d.label}, ${config.quadrants[d.quadrant].name}, ${config.rings[d.ring].name}`,
+        `Trend '${d.label}' in quadrant '${config.quadrants[d.quadrant].name}' and ring '${config.rings[d.ring].name}'`,
     )
     .attr('transform', (d, i) =>
       legend_transform(d.quadrant, d.ring, config.legend_column_width, i),
