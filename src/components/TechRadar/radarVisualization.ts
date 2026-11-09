@@ -146,7 +146,7 @@ export function radarVisualization(
     footer_offset: input.footer_offset ?? { x: -155, y: 520 },
     legend_column_width: input.legend_column_width ?? 140,
     legend_line_height: input.legend_line_height ?? 10,
-    font_family: input.font_family ?? 'Arial, Helvetica',
+    font_family: input.font_family ?? '"Roboto Condensed", sans-serif',
     quadrants: input.quadrants,
     rings: input.rings,
     entries: input.entries.map((entry) => ({

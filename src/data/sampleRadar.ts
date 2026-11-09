@@ -6,7 +6,7 @@ export const sampleRadarConfig: TechRadarConfig = {
     grid: '#dddde0',
     inactive: '#ddd',
   },
-  font_family: 'Arial, Helvetica',
+  font_family: '"Roboto Condensed", sans-serif',
   print_layout: true,
   links_in_new_tabs: true,
   quadrants: [
