@@ -459,11 +459,11 @@ export function radarVisualization(
       }
       legend
         .append('text')
+        .attr('class', 'quadrant-label')
         .attr('transform', translate(x, y))
         .attr('text-anchor', atTop ? 'middle' : onLeft ? 'end' : 'start')
         .text(config.quadrants[quadrant].name)
         .style('font-family', config.font_family)
-        .style('font-size', '36px')
         .style('font-weight', 'bold')
         .style('fill', '#000')
     }

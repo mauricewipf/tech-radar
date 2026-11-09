@@ -9,6 +9,16 @@
   height: auto;
 }
 
+.tech-radar .quadrant-label {
+  font-size: 24px;
+}
+
+@media (max-width: 640px) {
+  .tech-radar .quadrant-label {
+    font-size: 28px;
+  }
+}
+
 .tech-radar .blip {
   cursor: pointer;
   outline: none;
