@@ -190,7 +190,7 @@ export function radarVisualization(
   function polar(cartesian: CartesianPoint): PolarPoint {
     return {
       t: Math.atan2(cartesian.y, cartesian.x),
-      r: Math.sqrt(cartesian.x * cartesian.x + cartesian.y * cartesian.y),
+      r: Math.hypot(cartesian.x, cartesian.y),
     }
   }
 

@@ -5,7 +5,7 @@ import './TechRadar.css'
 
 export function TechRadar({ config }: TechRadarProps) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const svgId = `tech-radar-${useId().replace(/:/g, '')}`
+  const svgId = `tech-radar-${useId().replaceAll(':', '')}`
 
   useEffect(() => {
     const svg = svgRef.current
