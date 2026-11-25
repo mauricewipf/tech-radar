@@ -97,9 +97,67 @@ describe('radarVisualization', () => {
 
     expect(svg.id).toBe('test-radar')
     expect(svg.querySelectorAll('circle').length).toBeGreaterThan(0)
+    expect(svg.querySelectorAll('.quadrant-ring-fill')).toHaveLength(15)
     expect(svg.querySelectorAll('.blip')).toHaveLength(3)
     expect(svg.textContent).toContain('Languages')
     expect(svg.textContent).toContain('ACT')
+  })
+
+  it('colors sectors by quadrant clockwise starting from the top quadrant with per-quadrant ring opacities', () => {
+    dispose = radarVisualization(svg, baseConfig, 'color-radar')
+
+    const expectedByQuadrant: Record<
+      number,
+      { fill: string; opacities: [string, string, string] }
+    > = {
+      3: { fill: 'rgb(11, 112, 235)', opacities: ['0.62', '0.32', '0.16'] }, // #0B70EB — top
+      4: { fill: 'rgb(187, 183, 145)', opacities: ['0.62', '0.32', '0.16'] }, // #BBB791 — top-right
+      0: { fill: 'rgb(46, 111, 64)', opacities: ['0.72', '0.32', '0.16'] }, // #2E6F40 — bottom-right
+      1: { fill: 'rgb(218, 165, 32)', opacities: ['0.72', '0.32', '0.16'] }, // #DAA520 — bottom-left
+      2: { fill: 'rgb(223, 239, 178)', opacities: ['0.84', '0.45', '0.32'] }, // #DFEFB2 — top-left
+    }
+
+    for (const [quadrant, expected] of Object.entries(expectedByQuadrant)) {
+      for (let ring = 0; ring < 3; ring++) {
+        const fill = svg.querySelector<SVGPathElement>(
+          `.quadrant-ring-fill[data-quadrant="${quadrant}"][data-ring="${ring}"]`,
+        )
+        expect(fill).not.toBeNull()
+        expect(fill?.style.fill).toBe(expected.fill)
+        expect(fill?.style.fillOpacity).toBe(expected.opacities[ring])
+      }
+    }
+  })
+
+  it('allows overriding quadrant colors and ring opacities via config', () => {
+    dispose = radarVisualization(
+      svg,
+      {
+        ...baseConfig,
+        quadrants: [
+          { name: 'Languages', color: '#112233', ringOpacities: [0.9, 0.5, 0.2] },
+          { name: 'Infrastructure' },
+          { name: 'Datastores' },
+          { name: 'Data Management', color: '#445566' },
+          { name: 'Frameworks' },
+        ],
+      },
+      'custom-quadrant-colors',
+    )
+
+    const q0Inner = svg.querySelector<SVGPathElement>(
+      '.quadrant-ring-fill[data-quadrant="0"][data-ring="0"]',
+    )
+    const q0Outer = svg.querySelector<SVGPathElement>(
+      '.quadrant-ring-fill[data-quadrant="0"][data-ring="2"]',
+    )
+    const q3Fill = svg.querySelector<SVGPathElement>(
+      '.quadrant-ring-fill[data-quadrant="3"][data-ring="0"]',
+    )
+    expect(q0Inner?.style.fill).toBe('rgb(17, 34, 51)')
+    expect(q0Inner?.style.fillOpacity).toBe('0.9')
+    expect(q0Outer?.style.fillOpacity).toBe('0.2')
+    expect(q3Fill?.style.fill).toBe('rgb(68, 85, 102)')
   })
 
   it('uses the default svg id when none is provided', () => {

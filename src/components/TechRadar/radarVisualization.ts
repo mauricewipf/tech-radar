@@ -13,6 +13,25 @@ const DIVIDER_STROKE_WIDTH = 12
 const INNER_HOLE_RADIUS = 55
 /** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
 const TOP_QUADRANT = 3
+/** Default quadrant fill colors, ordered clockwise starting from the top quadrant. */
+const DEFAULT_QUADRANT_COLORS = [
+  '#0B70EB',
+  '#BBB791',
+  '#2E6F40',
+  '#DAA520',
+  '#DFEFB2',
+] as const
+/**
+ * Default ring fill opacities (inner → outer) per quadrant,
+ * ordered clockwise starting from the top quadrant.
+ */
+const DEFAULT_QUADRANT_RING_OPACITIES = [
+  [0.62, 0.32, 0.16],
+  [0.62, 0.32, 0.16],
+  [0.72, 0.32, 0.16],
+  [0.72, 0.32, 0.16],
+  [0.84, 0.45, 0.32],
+] as const
 /**
  * Shared baseline for the bottom-side quadrant titles (Q0 right, Q1 left).
  * Raised from the sector mid so the labels sit further up/out while still
@@ -257,6 +276,24 @@ export function radarVisualization(
     }
   }
 
+  function clockwiseQuadrantIndex(quadrant: number): number {
+    return (quadrant - TOP_QUADRANT + QUADRANT_COUNT) % QUADRANT_COUNT
+  }
+
+  function quadrantColor(quadrant: number): string {
+    return (
+      config.quadrants[quadrant].color ??
+      DEFAULT_QUADRANT_COLORS[clockwiseQuadrantIndex(quadrant)]
+    )
+  }
+
+  function quadrantRingOpacities(quadrant: number): readonly [number, number, number] {
+    return (
+      config.quadrants[quadrant].ringOpacities ??
+      DEFAULT_QUADRANT_RING_OPACITIES[clockwiseQuadrantIndex(quadrant)]
+    )
+  }
+
   for (const entry of config.entries) {
     entry.segment = segment(entry.quadrant, entry.ring)
     const point = entry.segment.random()
@@ -264,7 +301,7 @@ export function radarVisualization(
     entry.y = point.y
     entry.color =
       entry.active || config.print_layout
-        ? config.rings[entry.ring].color
+        ? quadrantColor(entry.quadrant)
         : config.colors.inactive
   }
 
@@ -376,16 +413,35 @@ export function radarVisualization(
     .append('g')
     .attr('mask', `url(#${dividerMaskId})`)
 
-  // Fill ring bands outer → inner so each ring keeps its own color.
-  for (let i = rings.length - 1; i >= 0; i--) {
-    ringFills
-      .append('circle')
-      .attr('cx', 0)
-      .attr('cy', 0)
-      .attr('r', rings[i].radius)
-      .style('fill', config.rings[i].color)
-      .style('fill-opacity', 0.28)
-      .style('stroke', 'none')
+  const sectorArc = d3.arc()
+
+  // Fill each quadrant sector ring-by-ring using the quadrant's color and opacities.
+  for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
+    const sector = sectors[quadrant]
+    const fill = quadrantColor(quadrant)
+    const opacities = quadrantRingOpacities(quadrant)
+    const startAngle = sector.start + Math.PI / 2
+    const endAngle = startAngle + sector.span
+
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const innerRadius = i === 0 ? 0 : rings[i - 1].radius
+      const pathData = sectorArc({
+        innerRadius,
+        outerRadius: rings[i].radius,
+        startAngle,
+        endAngle,
+      })
+
+      ringFills
+        .append('path')
+        .attr('class', 'quadrant-ring-fill')
+        .attr('data-quadrant', quadrant)
+        .attr('data-ring', i)
+        .attr('d', pathData ?? '')
+        .style('fill', fill)
+        .style('fill-opacity', opacities[i])
+        .style('stroke', 'none')
+    }
   }
 
   for (let i = 0; i < rings.length; i++) {

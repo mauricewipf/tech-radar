@@ -17,11 +17,14 @@ export interface RadarEntry {
 
 export interface RadarQuadrant {
   name: string
+  color?: string
+  /** Fill opacities from inner ring (0) to outer ring (2). */
+  ringOpacities?: [number, number, number]
 }
 
 export interface RadarRing {
   name: string
-  color: string
+  color?: string
   description?: string
 }
 

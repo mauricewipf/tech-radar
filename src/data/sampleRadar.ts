@@ -10,11 +10,11 @@ export const sampleRadarConfig: TechRadarConfig = {
   print_layout: true,
   links_in_new_tabs: true,
   quadrants: [
-    { name: 'Languages' },
-    { name: 'Infrastructure' },
-    { name: 'Datastores' },
-    { name: 'Data Management' },
-    { name: 'Frameworks' },
+    { name: 'Languages', color: '#2E6F40' },
+    { name: 'Infrastructure', color: '#DAA520' },
+    { name: 'Datastores', color: '#DFEFB2' },
+    { name: 'Data Management', color: '#0B70EB' },
+    { name: 'Frameworks', color: '#BBB791' },
   ],
   rings: [
     { name: 'ACT', color: '#5ba300' },
