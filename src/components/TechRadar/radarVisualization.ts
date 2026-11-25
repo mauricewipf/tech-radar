@@ -13,25 +13,6 @@ const DIVIDER_STROKE_WIDTH = 12
 const INNER_HOLE_RADIUS = 55
 /** Quadrant index whose mid-angle sits at the top (−π/2 in SVG coords). */
 const TOP_QUADRANT = 3
-/** Default quadrant fill colors, ordered clockwise starting from the top quadrant. */
-const DEFAULT_QUADRANT_COLORS = [
-  '#0B70EB',
-  '#BBB791',
-  '#2E6F40',
-  '#DAA520',
-  '#DFEFB2',
-] as const
-/**
- * Default ring fill opacities (inner → outer) per quadrant,
- * ordered clockwise starting from the top quadrant.
- */
-const DEFAULT_QUADRANT_RING_OPACITIES = [
-  [0.62, 0.32, 0.16],
-  [0.62, 0.32, 0.16],
-  [0.72, 0.32, 0.16],
-  [0.72, 0.32, 0.16],
-  [0.84, 0.45, 0.32],
-] as const
 /**
  * Shared baseline for the bottom-side quadrant titles (Q0 right, Q1 left).
  * Raised from the sector mid so the labels sit further up/out while still
@@ -276,24 +257,6 @@ export function radarVisualization(
     }
   }
 
-  function clockwiseQuadrantIndex(quadrant: number): number {
-    return (quadrant - TOP_QUADRANT + QUADRANT_COUNT) % QUADRANT_COUNT
-  }
-
-  function quadrantColor(quadrant: number): string {
-    return (
-      config.quadrants[quadrant].color ??
-      DEFAULT_QUADRANT_COLORS[clockwiseQuadrantIndex(quadrant)]
-    )
-  }
-
-  function quadrantRingOpacities(quadrant: number): readonly [number, number, number] {
-    return (
-      config.quadrants[quadrant].ringOpacities ??
-      DEFAULT_QUADRANT_RING_OPACITIES[clockwiseQuadrantIndex(quadrant)]
-    )
-  }
-
   for (const entry of config.entries) {
     entry.segment = segment(entry.quadrant, entry.ring)
     const point = entry.segment.random()
@@ -301,7 +264,7 @@ export function radarVisualization(
     entry.y = point.y
     entry.color =
       entry.active || config.print_layout
-        ? quadrantColor(entry.quadrant)
+        ? config.quadrants[entry.quadrant].color
         : config.colors.inactive
   }
 
@@ -418,8 +381,7 @@ export function radarVisualization(
   // Fill each quadrant sector ring-by-ring using the quadrant's color and opacities.
   for (let quadrant = 0; quadrant < QUADRANT_COUNT; quadrant++) {
     const sector = sectors[quadrant]
-    const fill = quadrantColor(quadrant)
-    const opacities = quadrantRingOpacities(quadrant)
+    const { color: fill, ringOpacities: opacities } = config.quadrants[quadrant]
     const startAngle = sector.start + Math.PI / 2
     const endAngle = startAngle + sector.span
 

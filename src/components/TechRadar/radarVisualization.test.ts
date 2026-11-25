@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { orderRadarEntries, radarVisualization } from './radarVisualization'
 import type { RadarEntry, TechRadarConfig } from './types'
 
-const quadrants = [
-  { name: 'Languages' },
-  { name: 'Infrastructure' },
-  { name: 'Datastores' },
-  { name: 'Data Management' },
-  { name: 'Frameworks' },
-] as const
+const quadrants: TechRadarConfig['quadrants'] = [
+  { name: 'Languages', color: '#2E6F40', ringOpacities: [0.72, 0.32, 0.16] },
+  { name: 'Infrastructure', color: '#DAA520', ringOpacities: [0.72, 0.32, 0.16] },
+  { name: 'Datastores', color: '#DFEFB2', ringOpacities: [0.84, 0.45, 0.32] },
+  { name: 'Data Management', color: '#0B70EB', ringOpacities: [0.62, 0.32, 0.16] },
+  { name: 'Frameworks', color: '#BBB791', ringOpacities: [0.62, 0.32, 0.16] },
+]
 
 const rings = [
   { name: 'ACT', color: '#5ba300' },
@@ -103,7 +103,7 @@ describe('radarVisualization', () => {
     expect(svg.textContent).toContain('ACT')
   })
 
-  it('colors sectors by quadrant clockwise starting from the top quadrant with per-quadrant ring opacities', () => {
+  it('applies each quadrant color and ring opacities from config', () => {
     dispose = radarVisualization(svg, baseConfig, 'color-radar')
 
     const expectedByQuadrant: Record<
@@ -127,37 +127,6 @@ describe('radarVisualization', () => {
         expect(fill?.style.fillOpacity).toBe(expected.opacities[ring])
       }
     }
-  })
-
-  it('allows overriding quadrant colors and ring opacities via config', () => {
-    dispose = radarVisualization(
-      svg,
-      {
-        ...baseConfig,
-        quadrants: [
-          { name: 'Languages', color: '#112233', ringOpacities: [0.9, 0.5, 0.2] },
-          { name: 'Infrastructure' },
-          { name: 'Datastores' },
-          { name: 'Data Management', color: '#445566' },
-          { name: 'Frameworks' },
-        ],
-      },
-      'custom-quadrant-colors',
-    )
-
-    const q0Inner = svg.querySelector<SVGPathElement>(
-      '.quadrant-ring-fill[data-quadrant="0"][data-ring="0"]',
-    )
-    const q0Outer = svg.querySelector<SVGPathElement>(
-      '.quadrant-ring-fill[data-quadrant="0"][data-ring="2"]',
-    )
-    const q3Fill = svg.querySelector<SVGPathElement>(
-      '.quadrant-ring-fill[data-quadrant="3"][data-ring="0"]',
-    )
-    expect(q0Inner?.style.fill).toBe('rgb(17, 34, 51)')
-    expect(q0Inner?.style.fillOpacity).toBe('0.9')
-    expect(q0Outer?.style.fillOpacity).toBe('0.2')
-    expect(q3Fill?.style.fill).toBe('rgb(68, 85, 102)')
   })
 
   it('uses the default svg id when none is provided', () => {
