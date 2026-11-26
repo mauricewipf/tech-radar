@@ -11,9 +11,9 @@ const quadrants: TechRadarConfig['quadrants'] = [
 ]
 
 const rings = [
-  { name: 'ACT', color: '#5ba300' },
-  { name: 'TRIAL', color: '#009eb0' },
-  { name: 'ASSESS', color: '#c7ba00' },
+  { name: 'ACT' },
+  { name: 'TRIAL' },
+  { name: 'ASSESS' },
 ] as const
 
 const baseConfig: TechRadarConfig = {

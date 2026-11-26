@@ -17,9 +17,9 @@ export const sampleRadarConfig: TechRadarConfig = {
     { name: 'Frameworks', color: '#BBB791', ringOpacities: [0.62, 0.32, 0.16] },
   ],
   rings: [
-    { name: 'ACT', color: '#5ba300' },
-    { name: 'TRIAL', color: '#009eb0' },
-    { name: 'ASSESS', color: '#c7ba00' },
+    { name: 'ACT' },
+    { name: 'TRIAL' },
+    { name: 'ASSESS' },
   ],
   entries: [
     { label: 'ClickHouse', quadrant: 2, ring: 1, moved: 2, link: 'https://clickhouse.com/' },

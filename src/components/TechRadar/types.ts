@@ -24,7 +24,6 @@ export interface RadarQuadrant {
 
 export interface RadarRing {
   name: string
-  color?: string
   description?: string
 }
 
